@@ -27,6 +27,15 @@ std::int64_t RoundToInt64(TFloat value) {
     return static_cast<std::int64_t>(rounded);
 }
 
+template<typename TFloat>
+std::int64_t RintToInt64(TFloat value) {
+    if (!(value >= static_cast<TFloat>(INT64_MIN) && value < -static_cast<TFloat>(INT64_MIN))) {
+        std::feraiseexcept(FE_INVALID);
+        return INT64_MIN;
+    }
+    return static_cast<std::int64_t>(std::llrint(value));
+}
+
 float SinhfExpm1(float x) {
     constexpr float Ln2High = 6.9313812256e-01f, Ln2Low = 9.0580006145e-06f, InverseLn2 = 1.4426950216e+00f;
     constexpr float Q1 = -3.3333212137e-2f, Q2 = 1.5807170421e-3f;
@@ -235,6 +244,12 @@ int APS5_VABI __isinff_nid_postfix(float x) { return std::isinf(x) ? 1 : 0; }
 float APS5_VABI nearbyintf_nid_postfix(float x) { return std::nearbyintf(x); }
 long double APS5_VABI nearbyintl_nid_postfix(long double x) { return std::nearbyint(x); }
 double APS5_VABI nearbyint_nid_postfix(double x) { return std::nearbyint(x); }
+std::int64_t APS5_VABI lrint_nid_postfix(double x) { return RintToInt64(x); }
+std::int64_t APS5_VABI lrintf_nid_postfix(float x) { return RintToInt64(x); }
+std::int64_t APS5_VABI lrintl_nid_postfix(long double x) { return RintToInt64(x); }
+std::int64_t APS5_VABI llrint_nid_postfix(double x) { return RintToInt64(x); }
+std::int64_t APS5_VABI llrintf_nid_postfix(float x) { return RintToInt64(x); }
+std::int64_t APS5_VABI llrintl_nid_postfix(long double x) { return RintToInt64(x); }
 
 double APS5_VABI cbrt_nid_postfix(double x) { return std::cbrt(x); }
 double APS5_VABI asin_nid_postfix(double x) {

@@ -107,6 +107,12 @@ std::int64_t APS5_VABI lroundf_nid_postfix(float);
 std::int64_t APS5_VABI llround_nid_postfix(double);
 std::int64_t APS5_VABI llroundf_nid_postfix(float);
 std::int64_t APS5_VABI llroundl_nid_postfix(long double);
+std::int64_t APS5_VABI lrint_nid_postfix(double);
+std::int64_t APS5_VABI lrintf_nid_postfix(float);
+std::int64_t APS5_VABI lrintl_nid_postfix(long double);
+std::int64_t APS5_VABI llrint_nid_postfix(double);
+std::int64_t APS5_VABI llrintf_nid_postfix(float);
+std::int64_t APS5_VABI llrintl_nid_postfix(long double);
 int APS5_VABI __isfinitef_nid_postfix(float);
 int APS5_VABI __isnormal_nid_postfix(double);
 int APS5_VABI __isnormalf_nid_postfix(float);
@@ -844,6 +850,27 @@ static void CheckNoConversionIsPositiveZero() {
     Require(parsedWideLong == 0.L && !std::signbit(parsedWideLong) && wideEnd == wide);
 }
 
+static void CheckLrint() {
+    Require(llrint_nid_postfix(2.5) == 2 && llrint_nid_postfix(3.5) == 4 && llrint_nid_postfix(-2.5) == -2);
+    Require(llrint_nid_postfix(0.5) == 0 && llrint_nid_postfix(-0.5) == 0);
+    Require(llrint_nid_postfix(0x1p53) == (1ll << 53));
+    Require(lrint_nid_postfix(2.5) == 2 && lrint_nid_postfix(3.5) == 4 && lrint_nid_postfix(-2.5) == -2);
+    Require(llrintf_nid_postfix(2.5f) == 2 && llrintf_nid_postfix(3.5f) == 4 && llrintf_nid_postfix(-2.5f) == -2);
+    Require(lrintf_nid_postfix(2.5f) == 2 && lrintf_nid_postfix(3.5f) == 4 && lrintf_nid_postfix(-2.5f) == -2);
+    Require(llrintl_nid_postfix(2.5L) == 2 && llrintl_nid_postfix(3.5L) == 4 && llrintl_nid_postfix(-2.5L) == -2);
+    Require(lrintl_nid_postfix(2.5L) == 2 && lrintl_nid_postfix(3.5L) == 4 && lrintl_nid_postfix(-2.5L) == -2);
+    std::feclearexcept(FE_ALL_EXCEPT);
+    Require(llrint_nid_postfix(0x1p62) == (1ll << 62) && std::fetestexcept(FE_INVALID) == 0);
+    std::feclearexcept(FE_ALL_EXCEPT);
+    Require(llrint_nid_postfix(1e300) == INT64_MIN && std::fetestexcept(FE_INVALID) != 0);
+    std::feclearexcept(FE_ALL_EXCEPT);
+    Require(lrint_nid_postfix(-1e300) == INT64_MIN && std::fetestexcept(FE_INVALID) != 0);
+    std::feclearexcept(FE_ALL_EXCEPT);
+    Require(llrintf_nid_postfix(1e30f) == INT64_MIN && std::fetestexcept(FE_INVALID) != 0);
+    std::feclearexcept(FE_ALL_EXCEPT);
+    Require(llrintl_nid_postfix(1e300L) == INT64_MIN && std::fetestexcept(FE_INVALID) != 0);
+}
+
 int main() {
     CheckFloatClassification();
     CheckNoConversionIsPositiveZero();
@@ -951,6 +978,7 @@ int main() {
     CheckExp2Errno();
     CheckExactOperations();
     CheckNearbyint();
+    CheckLrint();
     CheckFegetenv();
     CheckLongDouble();
     CheckNearbyintl();
