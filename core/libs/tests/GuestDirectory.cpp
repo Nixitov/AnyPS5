@@ -1,6 +1,7 @@
 #include "prx/libc/include/GuestDirectory.hpp"
 #include "prx/libc/include/general/VabiMacros.hpp"
 #include <chrono>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -14,6 +15,8 @@ GuestDirectoryEntry* APS5_VABI readdir_nid_postfix(void*);
 int APS5_VABI readdir_r_nid_postfix(void*, GuestDirectoryEntry*, GuestDirectoryEntry**);
 int APS5_VABI closedir_nid_postfix(void*);
 void APS5_VABI rewinddir_nid_postfix(void*);
+std::int64_t APS5_VABI telldir_nid_postfix(void*);
+void APS5_VABI seekdir_nid_postfix(void*, std::int64_t);
 int* APS5_VABI __error_nid_postfix();
 }
 static void Require(bool value) { if (!value) std::abort(); }
@@ -68,6 +71,29 @@ int main() {
     const std::string firstName = first->name;
     Require(readdir_r_nid_postfix(directory, &buffer, &result) == 0 && result == &buffer);
     Require(firstName != buffer.name && entries.count(buffer.name) == 1);
+    *__error_nid_postfix() = 13;
+    Require(telldir_nid_postfix(directory) == 2 && *__error_nid_postfix() == 13);
+    while (readdir_nid_postfix(directory)) { }
+    Require(telldir_nid_postfix(directory) == static_cast<std::int64_t>(entries.size()));
+    seekdir_nid_postfix(directory, 1);
+    auto* second = readdir_nid_postfix(directory);
+    Require(second != nullptr && std::string(second->name) == buffer.name);
+    Require(telldir_nid_postfix(directory) == 2);
+    seekdir_nid_postfix(directory, 0);
+    auto* restarted = readdir_nid_postfix(directory);
+    Require(restarted != nullptr && std::string(restarted->name) == firstName);
+    seekdir_nid_postfix(directory, static_cast<std::int64_t>(entries.size()) + 5);
+    Require(readdir_nid_postfix(directory) == nullptr);
+    *__error_nid_postfix() = 13;
+    Require(telldir_nid_postfix(nullptr) == -1 && *__error_nid_postfix() == 9);
+    *__error_nid_postfix() = 13;
+    seekdir_nid_postfix(nullptr, 0);
+    Require(*__error_nid_postfix() == 9);
+    *__error_nid_postfix() = 13;
+    seekdir_nid_postfix(directory, -1);
+    Require(*__error_nid_postfix() == 22);
+    rewinddir_nid_postfix(directory);
+    *__error_nid_postfix() = 13;
     result = &buffer;
     Require(readdir_r_nid_postfix(nullptr, &buffer, &result) == 9);
     Require(result == &buffer && *__error_nid_postfix() == 13);
